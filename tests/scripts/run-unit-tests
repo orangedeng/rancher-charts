@@ -1,0 +1,45 @@
+#!/bin/bash
+set -e
+
+CWD=$(pwd -P)
+cleanup()
+{
+    EXIT=$?
+    set +e
+    echo Cleaning up
+    TESTS="$CWD/$(dirname $0)/../unit"
+    for dindYML in $(find $TESTS -iname 'dind-*.yml'); do
+        rke remove --dind --force --config $dindYML
+        rm -f $dindYML
+    done
+    return $EXIT
+}
+
+if [[ "${DRONE_PULL_REQUEST}" ]]; then
+  CHANGEDPATHS=$(git --no-pager diff --name-only HEAD..HEAD~1 | grep "packages/" | cut -d'/' -f2-2 | uniq)
+else
+  CHANGEDPATHS=$(git --no-pager diff --name-only HEAD~1 | grep "packages/" | cut -d'/' -f2-2 | uniq)
+fi
+
+# if package changes are found, then run tests for that chart
+# if package changes are not found, we do not need to run unit tests on PR
+
+if [[ -z "$CHANGEDPATHS" ]]; thenq
+	echo "No chart package changes found, skipping unit tests"
+else
+	IFS=' ' read -r -a charts <<< "$CHANGEDPATHS"
+	for chart in "${charts[@]}"
+	do
+		export CHART=$chart
+			read packages/$chart/test/tests.yaml
+			for index each template; then:
+					package/$chart/tests/generate/$RANDOM = yq r package/$chart/tests/test.yaml templates[index].values.Override
+					helm template /packagelocation -f package/$chart/tests/generate/ >> $RANDOM
+					
+					go test $CWD/$(dirname $0)/../common
+
+}
+		go test $CWD/$(dirname $0)/../unit/$chart
+	done
+fi
+trap cleanup exit
