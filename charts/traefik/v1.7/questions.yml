@@ -18,16 +18,6 @@ questions:
     description: "Traefik Image Tag"
     type: string
     label: Traefik Image Tag
-- variable: serviceType
-  type: enum
-  options:
-    - "LoadBalancer"
-    - "NodePort"
-    - "ClusterIP"
-  default: "LoadBalancer"
-  description: "Service Type for Traefik"
-  label: Service Type
-  group: "General Settings"
 - variable: debug.enabled
   type: boolean
   default: false
@@ -40,6 +30,59 @@ questions:
   label: RBAC
   type: boolean
   group: "General Settings"
+- variable: kind.daemonset
+  default: false
+  description: "The pod will be duplicated on each node"
+  label: Enable DaemonSet
+  type: boolean
+  group: "General Settings"
+- variable: serviceType
+  type: enum
+  options:
+    - "LoadBalancer"
+    - "NodePort"
+    - "ClusterIP"
+  default: "LoadBalancer"
+  description: "Service Type for Traefik"
+  label: Service Type
+  group: "Services and Load Balancing"
+  show_subquestion_if: "NodePort"
+  group: "Services and Load Balancing"
+  subquestions:
+  - variable: service.nodePorts.http
+    default: ""
+    description: "NodePort http port(to set explicitly, choose port between 30000-32767)"
+    type: int
+    min: 30000
+    max: 32767
+    show_if: "serviceType=NodePort"
+    label: NodePort Http Port
+  - variable: service.nodePorts.https
+    default: ""
+    description: "NodePort https port(to set explicitly, choose port between 30000-32767)"
+    type: int
+    min: 30000
+    max: 32767
+    show_if: "serviceType=NodePort"
+    label: NodePort Https Port
+- variable: deployment.hostPort.enabled
+  default: false
+  description: "Enable Host Port"
+  label: HostPort
+  type: boolean
+  group: "Host Port"
+  show_subquestion_if: "true"
+  subquestions:
+  - variable: deployment.hostPort.httpEnabled
+    default: true
+    description: "Enable HostPort https"
+    type: boolean
+    label: Enable HostPort http
+  - variable: deployment.hostPort.httpsEnabled
+    default: true
+    description: "Enable HostPort https"
+    type: boolean
+    label: Enable HostPort https
 - variable: ssl.enabled
   type: boolean
   default: false
@@ -96,7 +139,7 @@ questions:
     default: "tls-alpn-01"
     description: "Challengetype to use for Lets Encrypt Certificates"
     label: Challengetype
-  - variable: persistence.enabled
+  - variable: acme.persistence.enabled
     type: boolean
     default: true
     description: "Enable Persistence for Lets Encrypt Certificates"
